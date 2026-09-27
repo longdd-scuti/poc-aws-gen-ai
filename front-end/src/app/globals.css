@@ -12,7 +12,7 @@
   --foreground: #f8fafc;
 }
 
-/* Root font sizing with automatic high-DPI / 4K monitor scaling */
+/* Base font scaling */
 html {
   font-size: 16px;
   -webkit-text-size-adjust: 100%;
@@ -32,22 +32,47 @@ html {
   }
 }
 
-/* User manual zoom overrides via data-text-size attribute */
-html[data-text-size="large"] {
-  font-size: 19px !important;
+/* User manual zoom overrides: 75%, 90%, 100%, 125%, 140% */
+html[data-text-size="75"] {
+  font-size: 12px !important;
 }
 
-html[data-text-size="xlarge"] {
-  font-size: 22px !important;
+html[data-text-size="90"] {
+  font-size: 14.5px !important;
 }
 
+html[data-text-size="100"] {
+  font-size: 16px !important;
+}
+
+html[data-text-size="125"] {
+  font-size: 20px !important;
+}
+
+html[data-text-size="140"] {
+  font-size: 22.5px !important;
+}
+
+/* 4K monitor overrides for each scale level */
 @media (min-width: 2560px) {
-  html[data-text-size="large"] {
-    font-size: 23px !important;
+  html[data-text-size="75"] {
+    font-size: 15.5px !important;
   }
 
-  html[data-text-size="xlarge"] {
+  html[data-text-size="90"] {
+    font-size: 18.5px !important;
+  }
+
+  html[data-text-size="100"] {
+    font-size: 21px !important;
+  }
+
+  html[data-text-size="125"] {
     font-size: 26px !important;
+  }
+
+  html[data-text-size="140"] {
+    font-size: 29.5px !important;
   }
 }
 

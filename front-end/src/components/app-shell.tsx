@@ -14,7 +14,7 @@ interface AppShellProps {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
-type TextSize = "normal" | "large" | "xlarge";
+export type TextSize = "75" | "90" | "100" | "125" | "140";
 type ThemeMode = "light" | "dark";
 
 export const AppShell: React.FC<AppShellProps> = ({
@@ -25,7 +25,7 @@ export const AppShell: React.FC<AppShellProps> = ({
 }) => {
   const pathname = usePathname();
   const [backendReady, setBackendReady] = useState<boolean | null>(null);
-  const [textSize, setTextSize] = useState<TextSize>("large");
+  const [textSize, setTextSize] = useState<TextSize>("125"); // Default 125% for 4K 27"
   const [theme, setTheme] = useState<ThemeMode>("light"); // Default to clean white/light theme for presentation
 
   useEffect(() => {
@@ -38,10 +38,21 @@ export const AppShell: React.FC<AppShellProps> = ({
       document.documentElement.classList.remove("dark");
     }
 
-    // Read font size preference or default to large for 4K
-    const savedSize = (localStorage.getItem("preferred_text_size") as TextSize) || "large";
-    setTextSize(savedSize);
-    document.documentElement.setAttribute("data-text-size", savedSize);
+    // Read font size preference or default to 125% for 4K
+    const savedSize = localStorage.getItem("preferred_text_size");
+    let initialSize: TextSize = "125";
+    if (savedSize === "75" || savedSize === "90" || savedSize === "100" || savedSize === "125" || savedSize === "140") {
+      initialSize = savedSize;
+    } else if (savedSize === "normal") {
+      initialSize = "100";
+    } else if (savedSize === "large") {
+      initialSize = "125";
+    } else if (savedSize === "xlarge") {
+      initialSize = "140";
+    }
+
+    setTextSize(initialSize);
+    document.documentElement.setAttribute("data-text-size", initialSize);
   }, []);
 
   const toggleTheme = () => {
@@ -83,6 +94,14 @@ export const AppShell: React.FC<AppShellProps> = ({
 
   const isRouting = pathname === "/" || pathname === "/routing";
   const isRAG = pathname === "/rag";
+
+  const sizeOptions: { id: TextSize; label: string; tooltip: string }[] = [
+    { id: "75", label: "75%", tooltip: "Compact (75%)" },
+    { id: "90", label: "90%", tooltip: "Medium Compact (90%)" },
+    { id: "100", label: "100%", tooltip: "Standard (100%)" },
+    { id: "125", label: "125%", tooltip: "Recommended for 4K 27-inch (125%)" },
+    { id: "140", label: "140%", tooltip: "Extra Large (140%)" },
+  ];
 
   return (
     <div className="flex flex-col h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-blue-500/20 transition-colors duration-150">
@@ -129,47 +148,26 @@ export const AppShell: React.FC<AppShellProps> = ({
 
         {/* Actions & Text Size & Theme & Status */}
         <div className="flex items-center gap-2.5 2xl:gap-3.5">
-          {/* Quick Font Size Switcher for 4K / High DPI screens */}
-          <div className="hidden sm:flex items-center bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-lg p-1 text-xs">
-            <span className="text-slate-500 px-1.5 flex items-center gap-1" title="Adjust font size for 4K / High DPI monitor">
+          {/* Font Size Switcher with 75%, 90%, 100%, 125%, 140% */}
+          <div className="hidden sm:flex items-center bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-lg p-0.5 text-xs">
+            <span className="text-slate-400 px-1.5 flex items-center gap-1" title="Adjust font size">
               <Type className="w-3.5 h-3.5" />
             </span>
-            <button
-              type="button"
-              onClick={() => changeTextSize("normal")}
-              className={`px-2 py-0.5 rounded transition-all ${
-                textSize === "normal"
-                  ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-cyan-300 font-semibold shadow-xs"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-              }`}
-              title="Standard font size (100%)"
-            >
-              100%
-            </button>
-            <button
-              type="button"
-              onClick={() => changeTextSize("large")}
-              className={`px-2 py-0.5 rounded transition-all ${
-                textSize === "large"
-                  ? "bg-blue-600 text-white dark:bg-cyan-600/30 dark:text-cyan-300 font-semibold shadow-xs"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-              }`}
-              title="Large font size for 4K 27-inch (125%)"
-            >
-              125% (4K)
-            </button>
-            <button
-              type="button"
-              onClick={() => changeTextSize("xlarge")}
-              className={`px-2 py-0.5 rounded transition-all ${
-                textSize === "xlarge"
-                  ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-cyan-300 font-semibold shadow-xs"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-              }`}
-              title="Extra large font size (140%)"
-            >
-              140%
-            </button>
+            {sizeOptions.map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => changeTextSize(opt.id)}
+                className={`px-2 py-0.5 rounded transition-all text-[11px] 2xl:text-xs font-mono ${
+                  textSize === opt.id
+                    ? "bg-blue-600 text-white dark:bg-cyan-600/30 dark:text-cyan-300 font-bold shadow-xs"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+                title={opt.tooltip}
+              >
+                {opt.label}
+              </button>
+            ))}
           </div>
 
           {/* Theme Mode Toggle (Sun for presentation / Moon for dark) */}

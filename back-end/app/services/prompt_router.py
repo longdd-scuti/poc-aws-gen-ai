@@ -12,23 +12,52 @@ MODEL_NAMES = {
     "anthropic.claude-3-5-sonnet-20241022-v2:0": "Claude 3.5 Sonnet",
 }
 
+# English and Vietnamese technical & reasoning keywords
 COMPLEX_KEYWORDS = [
+    # Architecture & Systems
     r"\barchitect\b",
     r"\barchitecture\b",
+    r"\bkiến trúc\b",
+    r"\bthiết kế\b",
+    r"\bdistributed\b",
+    r"\bphân tán\b",
+    r"\bmicroservice\b",
+    r"\bevent-driven\b",
+    r"\bresilient\b",
+    r"\bchịu tải\b",
+    r"\bhigh availability\b",
+    r"\bdisaster recovery\b",
+    
+    # Coding & Implementation
     r"\bcode\b",
+    r"\bscript\b",
+    r"\bviết code\b",
+    r"\blập trình\b",
+    r"\bimplementation\b",
+    r"\brefactor\b",
+    r"\balgorithm\b",
+    r"\bthuật toán\b",
+    r"\bconcurrency\b",
+    r"\basyncio\b",
+    
+    # Analysis & Comparison
     r"\bcompare\b",
     r"\bcomparison\b",
-    r"\brefactor\b",
+    r"\bso sánh\b",
+    r"\btrade-off\b",
     r"\banalyze\b",
     r"\banalysis\b",
-    r"\btrade-off\b",
-    r"\bresilient\b",
-    r"\bdistributed\b",
-    r"\bmicroservice\b",
-    r"\bimplementation\b",
+    r"\bphân tích\b",
+    r"\bđánh giá\b",
     r"\boptimize\b",
+    r"\btối ưu\b",
     r"\bperformance\b",
+    r"\bhiệu năng\b",
     r"\bsecurity\b",
+    r"\bbảo mật\b",
+    r"\bcomprehensive\b",
+    r"\bexhaustive\b",
+    r"\bproduction-grade\b",
 ]
 
 
@@ -48,29 +77,41 @@ def compute_heuristic_score(prompt: str) -> Tuple[int, List[str]]:
     reasons = []
     text_lower = prompt.lower()
 
-    # Length-based complexity
-    if len(prompt) > 400:
+    # 1. Length-based complexity
+    if len(prompt) > 600:
+        score += 3
+        reasons.append("Extensive in-depth prompt (>600 chars)")
+    elif len(prompt) > 300:
         score += 2
-        reasons.append("Long detailed prompt (>400 chars)")
-    elif len(prompt) > 150:
+        reasons.append("Detailed prompt (>300 chars)")
+    elif len(prompt) > 120:
         score += 1
-        reasons.append("Moderate prompt length (>150 chars)")
+        reasons.append("Moderate prompt length (>120 chars)")
 
-    # Keyword indicators
+    # 2. Keyword indicators (both EN and VN)
     matched_keywords = []
     for pattern in COMPLEX_KEYWORDS:
         if re.search(pattern, text_lower):
             matched_keywords.append(pattern.replace(r"\b", ""))
 
     if matched_keywords:
-        keyword_score = min(len(matched_keywords), 3)
+        keyword_score = min(len(matched_keywords), 4)
         score += keyword_score
-        reasons.append(f"Technical keywords detected: {', '.join(matched_keywords[:4])}")
+        reasons.append(f"Technical & reasoning keywords: {', '.join(matched_keywords[:4])}")
 
-    # Structural complexity (multiple constraints, bullet points, numbers)
-    if prompt.count("\n") >= 3 or ("1." in prompt and "2." in prompt):
+    # 3. Structural complexity (numbered multi-step tasks)
+    has_numbered_steps = ("1." in prompt and "2." in prompt and "3." in prompt)
+    if has_numbered_steps:
+        score += 2
+        reasons.append("Multi-step requirements (3+ numbered tasks)")
+    elif prompt.count("\n") >= 3 or ("1." in prompt and "2." in prompt):
         score += 1
-        reasons.append("Multi-step / structured constraints")
+        reasons.append("Structured multi-line constraints")
+
+    # 4. Explicit code request bonus
+    if any(k in text_lower for k in ("write a python", "write code", "viết code", "implement", "boto3 script")):
+        score += 1
+        reasons.append("Executable code implementation requested")
 
     return score, reasons
 
