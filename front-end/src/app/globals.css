@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+}
+
+.dark {
+  --background: #020617;
+  --foreground: #f8fafc;
+}
+
+/* Root font sizing with automatic high-DPI / 4K monitor scaling */
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Standard large displays / 1440p */
+@media (min-width: 1536px) {
+  html {
+    font-size: 18px;
+  }
+}
+
+/* 4K monitors (3840x2160, e.g. 27-inch / 32-inch) */
+@media (min-width: 2560px) {
+  html {
+    font-size: 21px;
+  }
+}
+
+/* User manual zoom overrides via data-text-size attribute */
+html[data-text-size="large"] {
+  font-size: 19px !important;
+}
+
+html[data-text-size="xlarge"] {
+  font-size: 22px !important;
+}
+
+@media (min-width: 2560px) {
+  html[data-text-size="large"] {
+    font-size: 23px !important;
+  }
+
+  html[data-text-size="xlarge"] {
+    font-size: 26px !important;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  overflow: hidden;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
