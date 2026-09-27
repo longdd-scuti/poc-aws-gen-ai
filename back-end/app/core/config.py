@@ -1,20 +1,32 @@
 import os
-from typing import List, Literal
-from pydantic import Field, field_validator
+from typing import List, Literal, Optional
+from dotenv import load_dotenv
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Ensure .env is explicitly loaded into environment
+_env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env")
+load_dotenv(_env_path)
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env"),
+        env_file=_env_path,
         env_file_encoding="utf-8",
         extra="ignore",
     )
 
-    # Environment
+    # Environment & Security
     app_env: str = Field(default="development", alias="APP_ENV")
     app_cors_origins: str = Field(default="http://localhost:3000", alias="APP_CORS_ORIGINS")
     aws_region: str = Field(default="us-east-1", alias="AWS_REGION")
+    allowed_client_ips: str = Field(default="", alias="ALLOWED_CLIENT_IPS")
+
+    # AWS Credentials (optional, fallback to default AWS credentials chain if not set)
+    aws_access_key_id: Optional[str] = Field(default=None, alias="AWS_ACCESS_KEY_ID")
+    aws_secret_access_key: Optional[str] = Field(default=None, alias="AWS_SECRET_ACCESS_KEY")
+    aws_session_token: Optional[str] = Field(default=None, alias="AWS_SESSION_TOKEN")
+    aws_profile: Optional[str] = Field(default=None, alias="AWS_PROFILE")
 
     # Routing Configuration (Screen 1)
     routing_mode: Literal["auto", "native", "heuristic"] = Field(default="auto", alias="ROUTING_MODE")
@@ -36,6 +48,12 @@ class Settings(BaseSettings):
         if not self.app_cors_origins:
             return ["http://localhost:3000"]
         return [origin.strip() for origin in self.app_cors_origins.split(",") if origin.strip()]
+
+    @property
+    def allowed_ips_list(self) -> List[str]:
+        if not self.allowed_client_ips:
+            return []
+        return [ip.strip() for ip in self.allowed_client_ips.split(",") if ip.strip()]
 
     def validate_runtime_mode(self) -> None:
         """Fail-fast check on startup if strict native mode is configured without ARN."""

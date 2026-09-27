@@ -1,5 +1,5 @@
-import boto3
 from fastapi import APIRouter, Response, status
+from app.core.aws_clients import get_boto3_session
 from app.core.config import settings
 from app.core.logging import logger
 
@@ -25,9 +25,9 @@ def readiness(response: Response):
         "knowledge_base_configured": bool(settings.bedrock_knowledge_base_id),
     }
 
-    # Lightweight credential check using botocore session
+    # Lightweight credential check using configured session (supports SSO profile & .env)
     try:
-        session = boto3.Session(region_name=settings.aws_region)
+        session = get_boto3_session()
         creds = session.get_credentials()
         if creds is not None:
             checks["credentials_available"] = True
